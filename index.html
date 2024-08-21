@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра с конфетти</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+
+        .confetti-container {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            background-color: #f00;
+            animation: fall 10s linear;
+            transform-origin: center center;
+            background-size: cover;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100%) rotateX(0) rotateY(0) rotateZ(0);
+            }
+            100% {
+                transform: translateY(100vh) rotateX(720deg) rotateY(720deg) rotateZ(720deg);
+            }
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: explode 1s linear infinite;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(10);
+                opacity: 0;
+            }
+        }
+
+        .victory-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 48px;
+            display: none;
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff00de, 0 0 40px #ff00de, 0 0 50px #ff00de, 0 0 60px #ff00de, 0 0 70px #ff00de;
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ff00de, 0 0 40px #ff00de, 0 0 50px #ff00de, 0 0 60px #ff00de, 0 0 70px #ff00de;
+            }
+            to {
+                text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confetti-container"></div>
+    <div class="score" id="score">Score: 0</div>
+    <div class="victory-message" id="victory-message">Світлобот</div>
+    <script>
+        const container = document.getElementById('confetti-container');
+        const scoreElement = document.getElementById('score');
+        const victoryMessage = document.getElementById('victory-message');
+        let score = 0;
+        const maxConfetti = 20; // Уменьшено количество конфетти
+        let stopConfetti = false;
+
+        function createConfetti() {
+            if (container.childElementCount < maxConfetti && !stopConfetti) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = Math.random() * 10 + 5 + 's'; // Уменьшена скорость падения
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationTimingFunction = `cubic-bezier(${Math.random()}, ${Math.random()}, ${Math.random()}, ${Math.random()})`;
+                confetti.style.transform = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg) rotateZ(${Math.random() * 360}deg)`;
+                confetti.style.zIndex = Math.random() * 100;
+
+                const size = Math.random() * 40 + 20; // Увеличен размер конфетти
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+
+                const shape = Math.random() > 0.75 ? 'circle' : (Math.random() > 0.5 ? 'square' : (Math.random() > 0.25 ? 'star' : 'triangle'));
+                confetti.style.borderRadius = shape === 'circle' ? '50%' : (shape === 'square' ? '0' : (shape === 'star' ? '50%' : '0 0 50% 50%'));
+
+                if (shape === 'star') {
+                    confetti.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+                } else if (shape === 'triangle') {
+                    confetti.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+                }
+
+                if (Math.random() > 0.5) {
+                    const gradient = `linear-gradient(${Math.random() * 360}deg, hsl(${Math.random() * 360}, 100%, 50%), hsl(${Math.random() * 360}, 100%, 50%))`;
+                    confetti.style.background = gradient;
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName = 'fall, colorChange';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', glow';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', sparkle';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', spin';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', pulse';
+                }
+
+                confetti.style.boxShadow = `0 0 5px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.5)`;
+
+                container.appendChild(confetti);
+
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+
+                confetti.addEventListener('click', () => {
+                    confetti.remove();
+                    score++;
+                    scoreElement.textContent = `Score: ${score}`;
+
+                    if (score >= 100) {
+                        stopConfetti = true;
+                        showFireworks();
+                        showVictoryMessage();
+                    }
+                });
+            }
+        }
+
+        function showFireworks() {
+            for (let i = 0; i < 100; i++) {
+                const firework = document.createElement('div');
+                firework.classList.add('firework');
+                firework.style.left = Math.random() * 100 + 'vw';
+                firework.style.top = Math.random() * 100 + 'vh';
+                firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                container.appendChild(firework);
+
+                firework.addEventListener('animationend', () => {
+                    firework.remove();
+                });
+            }
+            setInterval(() => {
+                for (let i = 0; i < 10; i++) {
+                    const firework = document.createElement('div');
+                    firework.classList.add('firework');
+                    firework.style.left = Math.random() * 100 + 'vw';
+                    firework.style.top = Math.random() * 100 + 'vh';
+                    firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    container.appendChild(firework);
+
+                    firework.addEventListener('animationend', () => {
+                        firework.remove();
+                    });
+                }
+            }, 1000);
+        }
+
+        function showVictoryMessage() {
+            victoryMessage.style.display = 'block';
+        }
+
+        setInterval(createConfetti, 200); // Увеличен интервал создания конфетти
+    </script>
+</body>
+</html>
