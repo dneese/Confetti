@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Puzzle</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #puzzle {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            width: fit-content;
+            margin: auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tile {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .tile:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .empty {
+            width: 100px;
+            height: 100px;
+            background-color: #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>Sliding Puzzle</h1>
+    <div id="puzzle"></div>
+    <button onclick="shufflePuzzle()">Shuffle</button>
+
+    <script>
+        const puzzle = document.getElementById('puzzle');
+        const tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, null];
+
+        function createPuzzle() {
+            tiles.forEach(tile => {
+                const div = document.createElement('div');
+                if (tile) {
+                    div.className = 'tile';
+                    div.textContent = tile;
+                    div.onclick = () => moveTile(tile);
+                } else {
+                    div.className = 'empty';
+                }
+                puzzle.appendChild(div);
+            });
+        }
+
+        function moveTile(tile) {
+            const tileIndex = tiles.indexOf(tile);
+            const emptyIndex = tiles.indexOf(null);
+            const tileRow = Math.floor(tileIndex / 4);
+            const tileCol = tileIndex % 4;
+            const emptyRow = Math.floor(emptyIndex / 4);
+            const emptyCol = emptyIndex % 4;
+
+            if ((Math.abs(tileRow - emptyRow) === 1 && tileCol === emptyCol) ||
+                (Math.abs(tileCol - emptyCol) === 1 && tileRow === emptyRow)) {
+                [tiles[tileIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[tileIndex]];
+                renderPuzzle();
+            }
+        }
+
+        function renderPuzzle() {
+            puzzle.innerHTML = '';
+            createPuzzle();
+        }
+
+        function shufflePuzzle() {
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+            renderPuzzle();
+        }
+
+        createPuzzle();
+    </script>
+</body>
+</html>
