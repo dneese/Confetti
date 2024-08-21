@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфетти</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .confetti-container {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            background-color: #f00;
+            animation: fall 5s linear;
+            transform-origin: center center;
+            background-size: cover;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100%) rotateX(0) rotateY(0) rotateZ(0);
+            }
+            100% {
+                transform: translateY(100vh) rotateX(720deg) rotateY(720deg) rotateZ(720deg);
+            }
+        }
+
+        @keyframes colorChange {
+            0% {
+                background-color: hsl(0, 100%, 50%);
+            }
+            25% {
+                background-color: hsl(90, 100%, 50%);
+            }
+            50% {
+                background-color: hsl(180, 100%, 50%);
+            }
+            75% {
+                background-color: hsl(270, 100%, 50%);
+            }
+            100% {
+                background-color: hsl(360, 100%, 50%);
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 1);
+            }
+            100% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confetti-container"></div>
+    <script>
+        const container = document.getElementById('confetti-container');
+        const maxConfetti = 200; // Збільшено максимальну кількість конфетті
+
+        function createConfetti() {
+            if (container.childElementCount < maxConfetti) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = Math.random() * 5 + 3 + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationTimingFunction = `cubic-bezier(${Math.random()}, ${Math.random()}, ${Math.random()}, ${Math.random()})`;
+                confetti.style.transform = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg) rotateZ(${Math.random() * 360}deg)`;
+                confetti.style.zIndex = Math.random() * 100;
+
+                const shape = Math.random() > 0.5 ? 'circle' : (Math.random() > 0.5 ? 'rectangle' : 'triangle');
+                const size = Math.random() * 10 + 5;
+                confetti.style.width = size + 'px';
+                confetti.style.height = shape === 'circle' ? size + 'px' : (shape === 'rectangle' ? Math.random() * 20 + 5 + 'px' : size + 'px');
+                confetti.style.borderRadius = shape === 'circle' ? '50%' : (shape === 'rectangle' ? '0' : '0 0 50% 50%');
+
+                if (Math.random() > 0.5) {
+                    const gradient = `linear-gradient(${Math.random() * 360}deg, hsl(${Math.random() * 360}, 100%, 50%), hsl(${Math.random() * 360}, 100%, 50%))`;
+                    confetti.style.background = gradient;
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName = 'fall, colorChange';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', glow';
+                }
+
+                if (Math.random() > 0.5) {
+                    confetti.style.animationName += ', sparkle';
+                }
+
+                confetti.style.boxShadow = `0 0 5px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.5)`;
+
+                container.appendChild(confetti);
+
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+            }
+        }
+
+        setInterval(createConfetti, 100);
+    </script>
+</body>
+</html>
