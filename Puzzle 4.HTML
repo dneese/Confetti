@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>П'ятнашки</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        #gameInfo {
+            display: flex;
+            justify-content: space-between;
+            width: 340px;
+            margin-bottom: 20px;
+        }
+
+        #puzzle {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-gap: 10px;
+            width: fit-content;
+            margin: auto;
+            padding: 10px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .tile {
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .tile:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .empty {
+            width: 80px;
+            height: 80px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            #puzzle {
+                grid-template-columns: repeat(4, 60px);
+            }
+
+            .tile, .empty {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: #ffcc00;
+            animation: explode 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(50);
+                opacity: 0;
+            }
+        }
+
+        .tile.move-left {
+            animation: moveLeft 0.3s ease-in-out;
+        }
+
+        .tile.move-right {
+            animation: moveRight 0.3s ease-in-out;
+        }
+
+        .tile.move-up {
+            animation: moveUp 0.3s ease-in-out;
+        }
+
+        .tile.move-down {
+            animation: moveDown 0.3s ease-in-out;
+        }
+
+        @keyframes moveLeft {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-80px);
+            }
+        }
+
+        @keyframes moveRight {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(80px);
+            }
+        }
+
+        @keyframes moveUp {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-80px);
+            }
+        }
+
+        @keyframes moveDown {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(80px);
+            }
+        }
+
+        #result {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>П'ятнашки</h1>
+    <div id="gameInfo">
+        <div id="timer">00:00</div>
+        <div id="moveCount">0</div>
+    </div>
+    <div id="puzzle"></div>
+    <button onclick="shufflePuzzle()">Перемішати</button>
+    <button onclick="undoMove()">Відміна ходу</button>
+    <button onclick="resetGame()">Скинути гру</button>
+    <div id="result">
+        <h2>Вітаємо! Ви виграли!</h2>
+        <p>Час: <span id="resultTime"></span></p>
+        <p>Кількість ходів: <span id="resultMoves"></span></p>
+        <p>Оцінка: <span id="resultScore"></span></p>
+    </div>
+
+    <script>
+        const puzzle = document.getElementById('puzzle');
+        const tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, null];
+        let startTime;
+        let timerInterval;
+        let moveCount = 0;
+        let moves = [];
+
+        function createPuzzle() {
+            puzzle.innerHTML = '';
+            tiles.forEach(tile => {
+                const div = document.createElement('div');
+                if (tile) {
+                    div.className = 'tile';
+                    div.textContent = tile;
+                    div.onclick = () => moveTile(tile);
+                } else {
+                    div.className = 'empty';
+                }
+                puzzle.appendChild(div);
+            });
+        }
+
+        function moveTile(tile) {
+            const tileIndex = tiles.indexOf(tile);
+            const emptyIndex = tiles.indexOf(null);
+            const tileRow = Math.floor(tileIndex / 4);
+            const tileCol = tileIndex % 4;
+            const emptyRow = Math.floor(emptyIndex / 4);
+            const emptyCol = emptyIndex % 4;
+
+            if ((Math.abs(tileRow - emptyRow) === 1 && tileCol === emptyCol) ||
+                (Math.abs(tileCol - emptyCol) === 1 && tileRow === emptyRow)) {
+                moves.push([tileIndex, emptyIndex]);
+                [tiles[tileIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[tileIndex]];
+                renderPuzzle();
+                incrementMoveCount();
+                checkWin();
+            }
+        }
+
+        function renderPuzzle() {
+            createPuzzle();
+        }
+
+        function shufflePuzzle() {
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+            if (!isSolvable(tiles, 4)) {
+                shufflePuzzle();
+            }
+            renderPuzzle();
+            startTimer();
+            moveCount = 0;
+            moves = [];
+            document.getElementById('moveCount').textContent = moveCount;
+        }
+
+        function isSolvable(tiles, size) {
+            let inversionCount = 0;
+            for (let i = 0; i < tiles.length; i++) {
+                for (let j = i + 1; j < tiles.length; j++) {
+                    if (tiles[i] && tiles[j] && tiles[i] > tiles[j]) {
+                        inversionCount++;
+                    }
+                }
+            }
+            const emptyRow = Math.floor(tiles.indexOf(null) / size);
+            return (inversionCount % 2 === 0) === (emptyRow % 2 === 1);
+        }
+
+        function checkWin() {
+            const sortedTiles = [...tiles].sort((a, b) => (a || 16) - (b || 16));
+            if (JSON.stringify(tiles) === JSON.stringify(sortedTiles)) {
+                celebrate();
+                stopTimer();
+                document.getElementById('resultTime').textContent = document.getElementById('timer').textContent;
+                document.getElementById('resultMoves').textContent = moveCount;
+                document.getElementById('resultScore').textContent = calculateScore();
+                document.getElementById('result').style.display = 'block';
+                saveResult();
+            }
+        }
+
+        function celebrate() {
+            for (let i = 0; i < 50; i++) {
+                createFirework();
+            }
+        }
+
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = `${Math.random() * 100}vw`;
+            firework.style.top = `${Math.random() * 100}vh`;
+            document.body.appendChild(firework);
+
+            setTimeout(() => {
+                firework.remove();
+            }, 1000);
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const currentTime = Date.now();
+            const elapsedTime = new Date(currentTime - startTime);
+            const minutes = elapsedTime.getMinutes().toString().padStart(2, '0');
+            const seconds = elapsedTime.getSeconds().toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function incrementMoveCount() {
+            moveCount++;
+            document.getElementById('moveCount').textContent = moveCount;
+        }
+
+        function decrementMoveCount() {
+            moveCount--;
+            document.getElementById('moveCount').textContent = moveCount;
+        }
+
+        function calculateScore() {
+            const maxScore = 1000;
+            const timePenalty = (Date.now() - startTime) / 1000;
+            const movePenalty = moveCount * 10;
+            const score = maxScore - timePenalty - movePenalty;
+            return Math.max(score, 0);
+        }
+
+        function undoMove() {
+            if (moves.length > 0) {
+                const [tileIndex, emptyIndex] = moves.pop();
+                [tiles[tileIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[tileIndex]];
+                renderPuzzle();
+                decrementMoveCount();
+            }
+        }
+
+        function resetGame() {
+            stopTimer();
+            shufflePuzzle();
+            moveCount = 0;
+            moves = [];
+            document.getElementById('moveCount').textContent = moveCount;
+            document.getElementById('result').style.display = 'none';
+        }
+
+        function saveResult() {
+            const result = {
+                time: document.getElementById('timer').textContent,
+                moves: moveCount,
+                score: calculateScore()
+            };
+            localStorage.setItem('puzzleResult', JSON.stringify(result));
+        }
+
+        function loadResult() {
+            const result = JSON.parse(localStorage.getItem('puzzleResult'));
+            if (result) {
+                document.getElementById('resultTime').textContent = result.time;
+                document.getElementById('resultMoves').textContent = result.moves;
+                document.getElementById('resultScore').textContent = result.score;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+
+        createPuzzle();
+        shufflePuzzle();
+        loadResult();
+    </script>
+</body>
+</html>
