@@ -174,14 +174,15 @@
         const puzzle = document.getElementById('puzzle');
         const tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, null];
 
+        // Створення початкового стану гри
         function createPuzzle() {
-            puzzle.innerHTML = '';
+            puzzle.innerHTML = ''; // Очищення поля гри
             tiles.forEach(tile => {
                 const div = document.createElement('div');
                 if (tile) {
                     div.className = 'tile';
                     div.textContent = tile;
-                    div.onclick = () => moveTile(tile);
+                    div.onclick = () => moveTile(tile); // Додавання обробника події для переміщення плитки
                 } else {
                     div.className = 'empty';
                 }
@@ -189,6 +190,7 @@
             });
         }
 
+        // Функція для переміщення плитки
         function moveTile(tile) {
             const tileIndex = tiles.indexOf(tile);
             const emptyIndex = tiles.indexOf(null);
@@ -197,39 +199,45 @@
             const emptyRow = Math.floor(emptyIndex / 4);
             const emptyCol = emptyIndex % 4;
 
+            // Перевірка, чи можна перемістити плитку
             if ((Math.abs(tileRow - emptyRow) === 1 && tileCol === emptyCol) ||
                 (Math.abs(tileCol - emptyCol) === 1 && tileRow === emptyRow)) {
-                [tiles[tileIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[tileIndex]];
-                renderPuzzle();
-                checkWin();
+                [tiles[tileIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[tileIndex]]; // Обмін місцями плитки та пустого місця
+                renderPuzzle(); // Оновлення відображення гри
+                checkWin(); // Перевірка на перемогу
             }
         }
 
+        // Функція для оновлення відображення гри
         function renderPuzzle() {
             createPuzzle();
         }
 
+        // Функція для перемішування плиток
         function shufflePuzzle() {
             for (let i = tiles.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; // Перемішування плиток
             }
-            renderPuzzle();
+            renderPuzzle(); // Оновлення відображення гри
         }
 
+        // Функція для перевірки перемоги
         function checkWin() {
             const sortedTiles = [...tiles].sort((a, b) => (a || 16) - (b || 16));
             if (JSON.stringify(tiles) === JSON.stringify(sortedTiles)) {
-                celebrate();
+                celebrate(); // Відзначення перемоги
             }
         }
 
+        // Функція для відзначення перемоги
         function celebrate() {
             for (let i = 0; i < 50; i++) {
-                createFirework();
+                createFirework(); // Створення феєрверку
             }
         }
 
+        // Функція для створення феєрверку
         function createFirework() {
             const firework = document.createElement('div');
             firework.className = 'firework';
@@ -238,11 +246,11 @@
             document.body.appendChild(firework);
 
             setTimeout(() => {
-                firework.remove();
+                firework.remove(); // Видалення феєрверку після анімації
             }, 1000);
         }
 
-        createPuzzle();
+        createPuzzle(); // Ініціалізація гри
     </script>
 </body>
-  </html>
+</html>
